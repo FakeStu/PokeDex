@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pokedex/api/poke_api.dart';
 import 'package:pokedex/models/pokemon_detail.dart';
+import 'package:pokedex/widgets/move_card.dart';
 import 'package:pokedex/widgets/move_list.dart';
 import 'package:pokedex/widgets/stat_bar.dart';
 import 'package:pokedex/widgets/type_badge.dart';
@@ -45,39 +46,57 @@ class _PokemonDetailPageState extends State<PokemonDetailPage>{
   }
 }
 
-class _PokemonDetailView extends StatelessWidget {
+class _PokemonDetailView extends StatefulWidget {
   final PokemonDetail pokemon;
 
   const _PokemonDetailView({required this.pokemon});
+  
+  @override
+  State<StatefulWidget> createState() => _PokemonDetailViewState();
+}
+
+class _PokemonDetailViewState extends State<_PokemonDetailView> {
+  bool _isMovesExpanded = true;
 
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
       slivers: [
-        _PokemonSliverAppBar(pokemon: pokemon),
+        _PokemonSliverAppBar(pokemon: widget.pokemon),
 
         SliverToBoxAdapter(
-          child: ExpansionTile(
-            initiallyExpanded: true,
-            title: const Text(
-              'Mosse', 
-              style: TextStyle(
-                fontSize: 14, 
-                fontWeight: FontWeight.bold
-              ),
-            ),
-            trailing: Text(
-              '${pokemon.moves.length}',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade500
-              ),
-            ),
-            children: [
-              MoveList(moves: pokemon.moves),
-            ]
-          )
+          child: ListTile(
+            title: Text('Mosse', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            onTap: () => setState(() => _isMovesExpanded = !_isMovesExpanded),
+          ),
         ),
+        SliverList.builder(
+          itemCount: _isMovesExpanded ? widget.pokemon.moves.length : 0,
+          itemBuilder: (context, index) => 
+            MoveCard.fromPokemonMove(widget.pokemon.moves[index])
+        ),
+        // SliverToBoxAdapter(
+        //   child: ExpansionTile(
+        //     initiallyExpanded: true,
+        //     title: const Text(
+        //       'Mosse', 
+        //       style: TextStyle(
+        //         fontSize: 14, 
+        //         fontWeight: FontWeight.bold
+        //       ),
+        //     ),
+        //     trailing: Text(
+        //       '${pokemon.moves.length}',
+        //       style: TextStyle(
+        //         fontSize: 12,
+        //         color: Colors.grey.shade500
+        //       ),
+        //     ),
+        //     children: [
+        //       MoveList(moves: pokemon.moves),
+        //     ]
+        //   )
+        // ),
       ],
     );
   }
