@@ -9,8 +9,8 @@ class PokeApi {
 
   PokeApi({http.Client? client}) : _client = client ?? http.Client();
 
-  Future<List<PokemonSummary>> fetchPokemonList() async {
-    final url = Uri.parse('https://pokeapi.co/api/v2/pokemon?limit=151');
+  Future<List<PokemonSummary>> fetchPokemonList({int limit = 15}) async {
+    final url = Uri.parse('https://pokeapi.co/api/v2/pokemon?limit=$limit');
     final response = await _client
       .get(url)
       .timeout(const Duration(seconds: 10));
@@ -42,7 +42,7 @@ class PokeApi {
     }
   }
 
-  Future<List<MoveSummary>> fetchMoveList({int limit = 200}) async {
+  Future<List<MoveSummary>> fetchMoveList({int limit = 30}) async {
     final url = Uri.parse('https://pokeapi.co/api/v2/move?limit=$limit');
     final response = await _client
         .get(url)
