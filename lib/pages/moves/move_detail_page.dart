@@ -1,45 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pokedex/api/poke_api.dart';
 import 'package:pokedex/models/move.dart';
+import 'package:pokedex/providers/move_providers.dart';
+import 'package:pokedex/widgets/error_message.dart';
+import 'package:pokedex/widgets/loading_indicator.dart';
 import 'package:pokedex/widgets/type_badge.dart';
 
-class MoveDetailScreen extends StatefulWidget {
-  final int moveId;
+class MoveDetailScreen extends ConsumerWidget {
+  final int id;
 
-  const MoveDetailScreen({super.key, required this.moveId});
-
-  @override
-  State<MoveDetailScreen> createState() => _MoveDetailScreenState();
-}
-
-class _MoveDetailScreenState extends State<MoveDetailScreen> {
-  late final Future<MoveDetail> _detailFuture;
+  const MoveDetailScreen({super.key, required this.id});
 
   @override
-  void initState() {
-    super.initState();
-    _detailFuture = PokeApi().fetchMoveDetail(widget.moveId);
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final move = ref.watch(moveDetailProvider(id));
 
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<MoveDetail>(
-      future: _detailFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator(color: Colors.red)),
-          );
-        }
-        if (snapshot.hasError) {
-          return Scaffold(
-            body: Center(child: Text('Errore: ${snapshot.error}')),
-          );
-        }
-
-        return _MoveDetailView(move: snapshot.data!);
-      },
+    return move.when(
+      loading: () => const LoadingIndicator(),
+      error: (error, stackTrace) => ErrorMessage(error: error),
+      data: (move) => _MoveDetailView(move: move)
     );
   }
 }

@@ -1,47 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pokedex/api/poke_api.dart';
 import 'package:pokedex/models/pokemon_detail.dart';
+import 'package:pokedex/providers/pokemon_providers.dart';
+import 'package:pokedex/widgets/error_message.dart';
+import 'package:pokedex/widgets/loading_indicator.dart';
 import 'package:pokedex/widgets/move_card.dart';
-import 'package:pokedex/widgets/move_list.dart';
 import 'package:pokedex/widgets/stat_bar.dart';
 import 'package:pokedex/widgets/type_badge.dart';
- 
-class PokemonDetailPage extends StatefulWidget {
-  final int pokemonId;
-  
-  const PokemonDetailPage({super.key, required this.pokemonId});
+
+class PokemonDetailPage extends ConsumerWidget{
+  final int id;
+
+  const PokemonDetailPage({super.key,required this.id});
 
   @override
-  State<StatefulWidget> createState() => _PokemonDetailPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pokemon = ref.watch(pokemonDetailProvider(id));
 
-class _PokemonDetailPageState extends State<PokemonDetailPage>{
-  late final Future<PokemonDetail> _detailFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _detailFuture = PokeApi().fetchPokemonDetail(widget.pokemonId);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<PokemonDetail>(
-      future: _detailFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator(color: Colors.red)),
-          );
-        } else if (snapshot.hasError) {
-          return Scaffold(
-            body: Center(child: Text('Error: ${snapshot.error}')),
-          );
-        }
- 
-        return _PokemonDetailView(pokemon: snapshot.data!);
-      },
+    return pokemon.when(
+      loading: () => const LoadingIndicator(),
+      error: (error, stackTrace) => ErrorMessage(error: error),
+      data: (data) => _PokemonDetailView(pokemon: data),
     );
   }
 }
@@ -62,8 +42,16 @@ class _PokemonDetailViewState extends State<_PokemonDetailView> {
   Widget build(BuildContext context) {
     return CustomScrollView(
       slivers: [
-        _PokemonSliverAppBar(pokemon: widget.pokemon),
+        SliverPersistentHeader(
+          pinned: true,
+          delegate: _PokemonHeaderDelegate(
+            pokemon: widget.pokemon,
+            expandedHeight: 480,
+            onBack: () => context.pop(),
+          ),
+        ),
 
+        // MoveList
         SliverToBoxAdapter(
           child: ListTile(
             title: Text('Mosse', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
@@ -75,54 +63,72 @@ class _PokemonDetailViewState extends State<_PokemonDetailView> {
           itemBuilder: (context, index) => 
             MoveCard.fromPokemonMove(widget.pokemon.moves[index])
         ),
-        // SliverToBoxAdapter(
-        //   child: ExpansionTile(
-        //     initiallyExpanded: true,
-        //     title: const Text(
-        //       'Mosse', 
-        //       style: TextStyle(
-        //         fontSize: 14, 
-        //         fontWeight: FontWeight.bold
-        //       ),
-        //     ),
-        //     trailing: Text(
-        //       '${pokemon.moves.length}',
-        //       style: TextStyle(
-        //         fontSize: 12,
-        //         color: Colors.grey.shade500
-        //       ),
-        //     ),
-        //     children: [
-        //       MoveList(moves: pokemon.moves),
-        //     ]
-        //   )
-        // ),
+        SliverPadding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).padding.bottom,
+          ),
+        ),
       ],
     );
   }
 }
 
-class _PokemonSliverAppBar extends StatelessWidget {
+class _PokemonHeaderDelegate extends SliverPersistentHeaderDelegate {
   final PokemonDetail pokemon;
+  final double expandedHeight;
+  final VoidCallback onBack;
 
-  const _PokemonSliverAppBar({required this.pokemon});
+  const _PokemonHeaderDelegate({
+    required this.pokemon,
+    required this.expandedHeight,
+    required this.onBack,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    return SliverAppBar(
-      expandedHeight: 480,
-      pinned: true,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () {
-          context.pop();
-        },
-      ),
-      title: _CollapsedHeader(pokemon: pokemon),
-      flexibleSpace: FlexibleSpaceBar(
-        collapseMode: CollapseMode.none,
-        background: _ExpandedHeader(pokemon: pokemon),
-      ),
+  double get maxExtent => expandedHeight;
+
+  @override
+  double get minExtent => kToolbarHeight;
+
+  @override
+  bool shouldRebuild(covariant _PokemonHeaderDelegate old) => old.pokemon != pokemon;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final percent = (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
+    final expandedOpacity = (1.0 - percent * 2.5).clamp(0.0, 1.0);
+    final collapsedOpacity = ((percent - 0.6) * 2.5).clamp(0.0, 1.0);
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Opacity(
+          opacity: expandedOpacity,
+          child: _ExpandedHeader(pokemon: pokemon),
+        ),
+        Positioned(
+          top: 0, left: 0, right: 0,
+          height: kToolbarHeight,
+          child: Container(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: onBack,
+                ),
+                Expanded(
+                  child: Opacity(
+                    opacity: collapsedOpacity,
+                    child: _CollapsedHeader(pokemon: pokemon),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

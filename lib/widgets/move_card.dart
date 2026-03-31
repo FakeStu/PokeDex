@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pokedex/api/poke_api.dart';
 import 'package:pokedex/models/move.dart';
 import 'package:pokedex/models/pokemon_detail.dart';
+import 'package:pokedex/providers/move_providers.dart';
 import 'package:pokedex/widgets/type_badge.dart';
 
-class MoveCard extends StatefulWidget {
+class MoveCard extends ConsumerWidget {
   final int moveId;
   final String moveName;
   final int? level;
@@ -31,44 +32,22 @@ class MoveCard extends StatefulWidget {
           moveId: move.id,
           moveName: move.name,
         );
-
+  
   @override
-  State<MoveCard> createState() => _MoveCardState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final displayName = moveName[0].toUpperCase() +
+        moveName.substring(1).replaceAll('-', ' ');
 
-class _MoveCardState extends State<MoveCard> {
-  MoveDetail? _detail;
-  bool _hasError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadDetail();
-  }
-
-  Future<void> _loadDetail() async {
-    try {
-      final detail = await PokeApi().fetchMoveDetail(widget.moveId);
-      if (mounted) setState(() => _detail = detail);
-    } catch (e) {
-      debugPrint('MoveCard #${widget.moveId}: $e');
-      if (mounted) setState(() => _hasError = true);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final displayName = widget.moveName[0].toUpperCase() +
-        widget.moveName.substring(1).replaceAll('-', ' ');
+    final moveDetail = ref.watch(moveDetailProvider(moveId));
 
     return ListTile(
       dense: true,
-      onTap: () => context.go('/moves/${widget.moveId}'),
-      leading: widget.level != null
+      onTap: () => context.push('/moves/$moveId'),
+      leading: level != null
           ? SizedBox(
               width: 36,
               child: Text(
-                widget.level! > 0 ? 'Lv.${widget.level}' : '-',
+                level! > 0 ? 'Lv.$level' : '-',
                 style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                 textAlign: TextAlign.center,
               ),
@@ -76,9 +55,9 @@ class _MoveCardState extends State<MoveCard> {
           : null,
       title: Row(
         children: [
-          if (_detail != null) ...[
-            if (_detail!.type != null) ...[
-              TypeBadge(type: _detail!.type!),
+          if (moveDetail.value != null) ...[
+            if (moveDetail.value!.type != null) ...[
+              TypeBadge(type: moveDetail.value!.type!),
               const SizedBox(width: 8),
             ],
           ] else
@@ -88,16 +67,20 @@ class _MoveCardState extends State<MoveCard> {
           ),
         ],
       ),
-      trailing: _detail != null
-          ? _MoveStats(detail: _detail!)
-          : _hasError
-              ? const Icon(Icons.error_outline, size: 16, color: Colors.red)
-              : const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 1.5),
-                ),
-    );
+      trailing: moveDetail.when(
+        loading: () => const SizedBox(
+          width: 16,
+          height: 16,
+          child: CircularProgressIndicator(strokeWidth: 1.5),
+        ),
+        error: (error, stackTrace) => const Icon(
+          Icons.error_outline, 
+          size: 16,
+          color: Colors.red,
+        ),
+        data: (detail) => _MoveStats(detail: detail), 
+      ),
+      );
   }
 }
 
