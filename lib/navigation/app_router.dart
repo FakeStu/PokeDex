@@ -1,5 +1,5 @@
 import 'package:go_router/go_router.dart';
-import 'package:pokedex/pages/pokemon_list_page.dart';
+import 'package:pokedex/pages/pokemon/pokemon_list_page.dart';
 import 'app_shell.dart';
 
 // Placeholder screens — verranno sostituiti con le schermate reali
@@ -30,7 +30,7 @@ final appRouter = GoRouter(
                   path: ':id',
                   builder: (context, state) {
                     final id = int.parse(state.pathParameters['id']!);
-                    return PokemonDetailPage(pokemonId: id);
+                    return PokemonDetailPage(id: id);
                   },
                 ),
               ],
@@ -49,7 +49,7 @@ final appRouter = GoRouter(
                   path: ':id',
                   builder: (context, state) {
                     final id = int.parse(state.pathParameters['id']!);
-                    return MoveDetailScreen(moveId: id);
+                    return MoveDetailScreen(id: id);
                   },
                 ),
               ],

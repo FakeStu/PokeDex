@@ -29,7 +29,7 @@ class NavBarItem extends StatelessWidget {
           curve: Curves.easeInOut,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.teal.withValues(alpha: 0.15) : Colors.transparent, 
+            color: isSelected ? Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.15) : Colors.transparent, 
             borderRadius: BorderRadius.circular(16),
             border: isSelected
                 ? Border.all(color: Colors.teal.withValues(alpha: 0.3), width: 1)
@@ -40,14 +40,14 @@ class NavBarItem extends StatelessWidget {
             children: [
               Icon(
                 item.icon,
-                color: isSelected ? Colors.teal : Colors.grey,
+                color: isSelected ? Theme.of(context).colorScheme.tertiary : Theme.of(context).colorScheme.onSurfaceVariant,
                 size: 24,
               ),
               const SizedBox(height: 4),
               Text(
                 item.label,
                 style: TextStyle(
-                  color: isSelected ? Colors.teal : Colors.grey,
+                  color: isSelected ? Theme.of(context).colorScheme.tertiary : Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 12,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),

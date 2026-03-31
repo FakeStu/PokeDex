@@ -9,7 +9,6 @@ class PokemonCard extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-    // TODO: change background color in pokemon list
     return Card(
       elevation: 2,
       margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),

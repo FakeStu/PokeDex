@@ -10,7 +10,12 @@ class PokemonList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.all(8),
+      padding: EdgeInsets.only(
+        top: 8, 
+        right: 8, 
+        left: 8, 
+        bottom: MediaQuery.of(context).padding.bottom + 8
+      ),
       itemCount: pokemonList.length,
       itemBuilder: (context, index) {
         return PokemonCard(pokemon: pokemonList[index]);
