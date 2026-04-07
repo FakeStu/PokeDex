@@ -1,18 +1,19 @@
 import 'dart:convert'; // Serve per trasformare il JSON in mappe Dart
 import 'package:http/http.dart' as http;
 import 'package:pokedex/models/move.dart';
-import 'package:pokedex/models/pokemon_detail.dart';
-import 'package:pokedex/models/pokemon_summary.dart';
+import 'package:pokedex/models/pokemon.dart';
 
 class PokeApi {
   final http.Client _client;
+
+  static const _headers = {'User-Agent': '{Pokedex-Flutter-App}'};
 
   PokeApi({http.Client? client}) : _client = client ?? http.Client();
 
   Future<List<PokemonSummary>> fetchPokemonList({int limit = 15}) async {
     final url = Uri.parse('https://pokeapi.co/api/v2/pokemon?limit=$limit');
     final response = await _client
-      .get(url)
+      .get(url, headers: _headers)
       .timeout(const Duration(seconds: 10));
 
     if (response.statusCode == 200) {
@@ -31,7 +32,7 @@ class PokeApi {
   Future<PokemonDetail> fetchPokemonDetail(int id) async {
     final url = Uri.parse('https://pokeapi.co/api/v2/pokemon/$id');
     final response = await _client
-      .get(url)
+      .get(url, headers: _headers)
       .timeout(const Duration(seconds: 10));
 
     if (response.statusCode == 200) {
@@ -45,7 +46,7 @@ class PokeApi {
   Future<List<MoveSummary>> fetchMoveList({int limit = 30}) async {
     final url = Uri.parse('https://pokeapi.co/api/v2/move?limit=$limit');
     final response = await _client
-        .get(url)
+        .get(url, headers: _headers)
         .timeout(const Duration(seconds: 10));
 
     if (response.statusCode == 200) {
@@ -63,7 +64,7 @@ class PokeApi {
   Future<MoveDetail> fetchMoveDetail(int id) async {
     final url = Uri.parse('https://pokeapi.co/api/v2/move/$id');
     final response = await _client
-        .get(url)
+        .get(url, headers: _headers)
         .timeout(const Duration(seconds: 30));
 
     if (response.statusCode == 200) {

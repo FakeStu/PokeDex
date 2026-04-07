@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pokedex/models/pokemon_summary.dart';
+import 'package:pokedex/models/pokemon.dart';
 import 'package:pokedex/widgets/pokemon_card.dart';
 
 class PokemonList extends StatelessWidget {

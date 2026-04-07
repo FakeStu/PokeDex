@@ -1,6 +1,5 @@
 import 'package:pokedex/api/poke_api.dart';
-import 'package:pokedex/models/pokemon_detail.dart';
-import 'package:pokedex/models/pokemon_summary.dart';
+import 'package:pokedex/models/pokemon.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'pokemon_providers.g.dart';

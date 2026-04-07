@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pokedex/models/move.dart';
-import 'package:pokedex/models/pokemon_detail.dart';
+import 'package:pokedex/models/pokemon.dart';
 import 'package:pokedex/providers/move_providers.dart';
 import 'package:pokedex/widgets/type_badge.dart';
 
