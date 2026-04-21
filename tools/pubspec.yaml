@@ -1,0 +1,11 @@
+# tools/pubspec.yaml
+name: pokedex_tools
+description: Scripts for generating the Pokedex database
+version: 1.0.0
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  csv: ^6.0.0
+  sqlite3: ^2.4.0

@@ -1,15 +1,25 @@
-import 'package:pokedex/api/poke_api.dart';
-import 'package:pokedex/models/pokemon.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+// lib/providers/pokemon_providers.dart
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pokedex/data/models.dart';
+import 'package:pokedex/data/repository.dart';
+import 'package:pokedex/providers/database_provider.dart';
 
-part 'pokemon_providers.g.dart';
+final repositoryProvider = Provider<PokemonRepository>((ref) {
+  final db = ref.watch(databaseProvider);
+  return PokemonRepository(db);
+});
 
-@Riverpod(keepAlive: true)
-Future<PokemonDetail> pokemonDetail (Ref ref, int id) {
-  return PokeApi().fetchPokemonDetail(id);
-}
+final pokemonListProvider = FutureProvider<List<PokemonListItem>>((ref) {
+  final repo = ref.watch(repositoryProvider);
+  return repo.getPokemonList();
+});
 
-@Riverpod(keepAlive: true)
-Future<List<PokemonSummary>> pokemonList(Ref ref) {
-  return PokeApi().fetchPokemonList();
-}
+final pokemonDetailProvider = FutureProvider.family<PokemonFullDetail, int>((ref, id) {
+  final repo = ref.watch(repositoryProvider);
+  return repo.getPokemonDetail(id);
+});
+
+final moveListProvider = FutureProvider<List<MoveListItem>>((ref) {
+  final repo = ref.watch(repositoryProvider);
+  return repo.getMoveList();
+});
